@@ -41,6 +41,21 @@
     regexp: '^GRUB_CMDLINE_LINUX="'
   when: >
     ansible_os_family == "RedHat" and
-    ansible_distribution_major_version | int >= 7
+    ansible_distribution_major_version | int >= 7 and
+    grub_cmdline_add_args | length > 0
+  notify:
+    - Update Grub2 config file
+
+- name: Remove arguments from Grub default config for RedHat >= 7
+  lineinfile:
+    dest: "{{ grub_cmdline_default }}"
+    regexp: '^(GRUB_CMDLINE_LINUX.*){{ item }}(.*)$'
+    line: '\1\2'
+    backrefs: yes
+  with_items: "{{ grub_cmdline_remove_args }}"
+  when: >
+    ansible_os_family == "RedHat" and
+    ansible_distribution_major_version | int >= 7 and
+    grub_cmdline_remove_args | length > 0
   notify:
     - Update Grub2 config file
